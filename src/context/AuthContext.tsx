@@ -67,6 +67,7 @@ interface AuthContextType {
   resetPassword: (input: ResetPasswordInput) => Promise<any>;
   refreshToken: () => Promise<boolean>;
   checkAuth: () => Promise<boolean>;
+  getTokens: () => { accessToken: string | null; refreshToken: string | null };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -91,6 +92,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const VERIFY_OTP_API_URL = `${API_BASE_URL}/api/auth/verify-otp`;
   const GET_PROFILE_URL = `${API_BASE_URL}/api/auth/me`;
   const RESET_PASSWORD_API_URL = `${API_BASE_URL}/api/auth/reset-password`;
+  const REGISTER_API_URL = `${API_BASE_URL}/api/auth/register`;
+
 
   // SSR-safe helper functions for token management
   const setTokens = (accessToken: string, refreshTokenValue: string) => {
@@ -178,7 +181,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const response = await axios.post("http://localhost:8080/api/auth/register", {
+      const response = await axios.post(REGISTER_API_URL, {
         username: input.username,
         email: input.email,
         password: input.password,
@@ -363,7 +366,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      const response = await axios.post(`${REFRESH_API_URL}?refreshToken=${refreshToken}`, {});
+      const response = await axios.post(`${REFRESH_API_URL}?refreshToken=${encodeURIComponent(refreshTokenValue)}`, {});
       if (response.data?.access_token) {
         const { access_token, refresh_token } = response.data;
         setTokens(access_token, refresh_token || refreshTokenValue);
@@ -481,7 +484,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     verifyOTP,
     resetPassword,
     refreshToken,
-    checkAuth
+    checkAuth,
+    getTokens,
   };
 
   // Don't render children until mounted on client-side to prevent hydration mismatch

@@ -71,7 +71,7 @@ const LoginPage = () => {
           router.push('/dashboard/admin');
           break;
         default:
-          router.push('/dashboard');
+          router.push('/dashboard/user');
       }
 
     } catch (err: any) {

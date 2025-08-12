@@ -1,14 +1,14 @@
 'use client'
 
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import { getMenuSectionsForRole } from '../../config/menu-config';
-import { 
-  Bell, 
-  Mail, 
-  HelpCircle, 
-  User, 
+import {
+  Bell,
+  Mail,
+  HelpCircle,
+  User,
   LogOut,
   ChevronDown,
   Settings
@@ -16,6 +16,7 @@ import {
 import SidebarMenu from './SidebarMenu';
 import Loading from '../common/Loading';
 import { useRouter } from 'next/navigation';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subtitle }) => {
   const { user, logout, isAuthenticated, isLoading } = useAuth(); // Fixed: use correct property names
+  const { notifications, loading: notificationsLoading, error, refresh } = useNotifications();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -41,6 +43,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
 
     return () => clearInterval(timeInterval);
   }, []);
+
+  const unreadNotifications = useMemo(() => {
+    return notifications.filter(n => !n.read);
+  }, [notifications]);
 
   const updateTime = () => {
     const now = new Date();
@@ -86,6 +92,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
     setUserMenuOpen(false);
     setNotificationsOpen(false);
   };
+  const handleNotify = () => {
+    router.push("/dashboard/user/notifications")
+  };
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
@@ -93,13 +102,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
       <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         {!sidebarCollapsed && (
           <div className="flex items-center space-x-3">
-            <div 
-              style={{ backgroundColor: colors.smart.blue }} 
+            <div
+              style={{ backgroundColor: colors.smart.blue }}
               className="w-9 h-9 rounded-lg flex items-center justify-center"
             >
-              <img 
-                src="/smart_spend_logo.jpg" 
-                alt="Spending Logo" 
+              <img
+                src="/smart_spend_logo.jpg"
+                alt="Spending Logo"
                 className="w-8 h-8 object-contain"
               />
             </div>
@@ -118,10 +127,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
           </svg>
         </button>
       </div>
-      
+
       {/* Dynamic Menu Component */}
-      <SidebarMenu 
-        collapsed={sidebarCollapsed} 
+      <SidebarMenu
+        collapsed={sidebarCollapsed}
         onMenuClick={() => setSidebarOpen(false)}
         excludeGeneral={true}
       />
@@ -132,7 +141,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -162,7 +171,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              
+
               {/* Page Title */}
               <div>
                 {title && <h1 className="text-xl font-semibold text-gray-900">{title}</h1>}
@@ -179,17 +188,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
 
               {/* Notifications */}
               <div className="relative">
-                <button 
+                <button
                   onClick={() => handleGeneralMenuClick('/dashboard/notifications')}
                   className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   title="Notifications"
                 >
                   <Bell size={20} />
-                  {generalItems.find(item => item.id === 'notifications')?.badge && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                      {generalItems.find(item => item.id === 'notifications')?.badge}
-                    </span>
-                  )}
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    {unreadNotifications.length || 0}
+                  </span>
+
                 </button>
 
                 {/* Notifications Dropdown */}
@@ -198,38 +206,42 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
                     <div className="px-4 py-2 border-b border-gray-200">
                       <h3 className="font-semibold text-gray-900">Notifications</h3>
                     </div>
+
                     <div className="max-h-64 overflow-y-auto">
-                      <div className="px-4 py-3 hover:bg-gray-50">
-                        <p className="text-sm text-gray-900">System backup completed</p>
-                        <p className="text-xs text-gray-500">2 minutes ago</p>
-                      </div>
-                      <div className="px-4 py-3 hover:bg-gray-50">
-                        <p className="text-sm text-gray-900">New patient registration</p>
-                        <p className="text-xs text-gray-500">5 minutes ago</p>
-                      </div>
-                      <div className="px-4 py-3 hover:bg-gray-50">
-                        <p className="text-sm text-gray-900">SAP sync completed</p>
-                        <p className="text-xs text-gray-500">10 minutes ago</p>
-                      </div>
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-gray-100' : ''}`}
+                          >
+                            <p className="text-sm text-gray-900">{notification.title}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(notification.timestamp).toLocaleString()}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-gray-500">
+                          No notifications found.
+                        </div>
+                      )}
                     </div>
+
                     <div className="px-4 py-2 border-t border-gray-200">
-                      <button className="text-sm text-blue-600 hover:text-blue-800">View all notifications</button>
+                      <button
+                        className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                        onClick={handleNotify}
+                      >
+                        View all notifications
+                      </button>
                     </div>
                   </div>
                 )}
+
               </div>
 
-              {/* Messages */}
-              <button 
-                onClick={() => handleGeneralMenuClick('/dashboard/messages')}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Messages"
-              >
-                <Mail size={20} />
-              </button>
-
               {/* Help & Support */}
-              <button 
+              <button
                 onClick={() => handleGeneralMenuClick('/dashboard/support')}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Help & Support"
@@ -286,7 +298,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
                         <User size={16} />
                         <span>My Profile</span>
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           handleGeneralMenuClick('/dashboard/settings');
@@ -327,8 +339,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
 
       {/* Click outside handlers */}
       {(userMenuOpen || notificationsOpen) && (
-        <div 
-          className="fixed inset-0 z-20" 
+        <div
+          className="fixed inset-0 z-20"
           onClick={handleClickOutside}
         />
       )}
