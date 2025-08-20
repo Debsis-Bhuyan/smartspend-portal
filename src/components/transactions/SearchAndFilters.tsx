@@ -1,8 +1,21 @@
 import { File, FileText, Filter, Search } from "lucide-react";
+import { TransactionFilters } from "./type";
 
-const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange, onExport, showFilters, onToggleFilters }) => {
+type ExportFormat = 'csv' | 'pdf';
+
+export interface SearchAndFiltersProps {
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  filters: TransactionFilters;
+  onFiltersChange: (filters: TransactionFilters) => void;
+  onExport: (format: ExportFormat) => void;
+  showFilters: boolean;
+  onToggleFilters: () => void;
+}
+
+const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ searchTerm, onSearchChange, filters, onFiltersChange, onExport, showFilters, onToggleFilters }) => {
   const categories = [
-    'Food & Dining', 'Transportation', 'Shopping', 'Entertainment', 
+    'Food & Dining', 'Transportation', 'Shopping', 'Entertainment',
     'Bills & Utilities', 'Healthcare', 'Education', 'Travel', 'Income', 'Investment', 'Other'
   ];
 
@@ -63,7 +76,7 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
               <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <select
                 value={filters.category}
-                onChange={(e) => onFiltersChange({...filters, category: e.target.value})}
+                onChange={(e) => onFiltersChange({ ...filters, category: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Categories</option>
@@ -76,12 +89,12 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
               <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select
                 value={filters.type}
-                onChange={(e) => onFiltersChange({...filters, type: e.target.value})}
+                onChange={(e) => onFiltersChange({ ...filters, type: e.target.value as "" | "INCOME" | "EXPENSE" })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Types</option>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
+                <option value="INCOME">Income</option>
+                <option value="EXPENSE">Expense</option>
               </select>
             </div>
             <div>
@@ -89,7 +102,7 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
               <input
                 type="date"
                 value={filters.dateFrom}
-                onChange={(e) => onFiltersChange({...filters, dateFrom: e.target.value})}
+                onChange={(e) => onFiltersChange({ ...filters, dateFrom: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -98,7 +111,7 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
               <input
                 type="date"
                 value={filters.dateTo}
-                onChange={(e) => onFiltersChange({...filters, dateTo: e.target.value})}
+                onChange={(e) => onFiltersChange({ ...filters, dateTo: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -109,7 +122,7 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
                 step="0.01"
                 placeholder="0.00"
                 value={filters.amountMin}
-                onChange={(e) => onFiltersChange({...filters, amountMin: e.target.value})}
+                onChange={(e) => onFiltersChange({ ...filters, amountMin: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -120,7 +133,7 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
                 step="0.01"
                 placeholder="0.00"
                 value={filters.amountMax}
-                onChange={(e) => onFiltersChange({...filters, amountMax: e.target.value})}
+                onChange={(e) => onFiltersChange({ ...filters, amountMax: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -139,4 +152,4 @@ const SearchAndFilters = ({ searchTerm, onSearchChange, filters, onFiltersChange
   );
 };
 
-export default SearchAndFilters ;
+export default SearchAndFilters;

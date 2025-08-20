@@ -1,5 +1,3 @@
-// utils/auth.ts
-import { ApolloError } from '@apollo/client';
 
 export interface ApiError {
   message: string;
@@ -7,7 +5,7 @@ export interface ApiError {
   field?: string;
 }
 
-export const parseAuthError = (error: ApolloError): string => {
+export const parseAuthError = (error: any): string => {
   // Handle GraphQL errors
   if (error.graphQLErrors && error.graphQLErrors.length > 0) {
     const graphQLError = error.graphQLErrors[0];
@@ -121,12 +119,8 @@ export const getRedirectPath = (userRole: string): string => {
   switch (userRole.toLowerCase()) {
     case 'admin':
       return '/dashboard/admin';
-    case 'doctor':
-      return '/dashboard/doctor';
-    case 'nurse':
-      return '/dashboard/nurse';
-    case 'patient':
-      return '/dashboard/patient';
+    case 'user':
+      return '/dashboard';
     default:
       return '/dashboard';
   }

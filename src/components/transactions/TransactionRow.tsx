@@ -1,12 +1,21 @@
 import { Calendar, Edit3, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import { Transaction } from "./type";
 
-const TransactionRow = ({ transaction, onEdit, onDelete }) => {
+interface TransactionRowProps {
+  transaction: Transaction;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (id: string) => void;
+}
+
+const TransactionRow: React.FC<TransactionRowProps> = ({ transaction, onEdit, onDelete }) => {
+  if (!transaction?.id) return null;
+
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
-          <div className={`p-2 rounded-full mr-3 ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'}`}>
-            {transaction.type === 'income' ? (
+          <div className={`p-2 rounded-full mr-3 ${transaction.type === 'INCOME' ? 'bg-green-100' : 'bg-red-100'}`}>
+            {transaction.type === 'INCOME' ? (
               <TrendingUp className="w-4 h-4 text-green-600" />
             ) : (
               <TrendingDown className="w-4 h-4 text-red-600" />
@@ -45,7 +54,7 @@ const TransactionRow = ({ transaction, onEdit, onDelete }) => {
             <Edit3 className="w-4 h-4" />
           </button>
           <button
-            onClick={() => onDelete(transaction.id)}
+            onClick={() => transaction?.id && onDelete(transaction.id)}
             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />
@@ -55,4 +64,4 @@ const TransactionRow = ({ transaction, onEdit, onDelete }) => {
     </tr>
   );
 };
-export default TransactionRow ;
+export default TransactionRow;

@@ -465,7 +465,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               router.push('/dashboard/admin');
               break;
             default:
-              router.push('/dashboard/user');
+              router.push('/dashboard');
           }
         }
       }, 100)

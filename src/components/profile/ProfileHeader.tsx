@@ -1,33 +1,17 @@
 import { Heart, Shield, Stethoscope, User } from "lucide-react";
-import { AdminProfile, DoctorProfile, NurseProfile, PatientProfile, UserProfile } from "./type";
+import { AdminProfile, PatientProfile, UserProfile } from "./type";
 
 const ProfileHeader: React.FC<{ user: UserProfile }> = ({ user }) => {
   const getRoleIcon = () => {
     switch (user.role) {
-      case 'doctor': return <Stethoscope className="w-5 h-5" />;
-      case 'nurse': return <Heart className="w-5 h-5" />;
-      case 'patient': return <User className="w-5 h-5" />;
+      case 'user': return <User className="w-5 h-5" />;
       case 'admin': return <Shield className="w-5 h-5" />;
     }
   };
 
   const getRoleStats = () => {
     switch (user.role) {
-      case 'doctor':
-        const doctorUser = user as DoctorProfile;
-        return [
-          { label: 'Active Patients', value: doctorUser.patients.activePatients },
-          { label: 'Satisfaction', value: `${doctorUser.patients.careStatistics.patientSatisfaction}/5` },
-          { label: 'Experience', value: `${doctorUser.professionalInfo.experience} years` }
-        ];
-      case 'nurse':
-        const nurseUser = user as NurseProfile;
-        return [
-          { label: 'Current Patients', value: nurseUser.assignments.patientCount },
-          { label: 'Care Score', value: `${nurseUser.performance.patientCareScore}%` },
-          { label: 'Ward', value: nurseUser.assignments.currentWard }
-        ];
-      case 'patient':
+      case 'user':
         const patientUser = user as PatientProfile;
         return [
           { label: 'Care Team', value: patientUser.currentCare.assignedProviders.length },

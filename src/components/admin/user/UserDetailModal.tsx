@@ -13,7 +13,7 @@ import {
   Trash2,
   Star
 } from 'lucide-react';
-import { colors } from '@/src/theme';
+import { colors } from '@/theme';
 
 interface UserType {
   id: string;

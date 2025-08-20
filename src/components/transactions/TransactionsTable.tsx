@@ -1,7 +1,13 @@
 import { CreditCard } from "lucide-react";
 import TransactionRow from "./TransactionRow";
+import { Transaction } from "./type";
 
-const TransactionsTable = ({ transactions, onEdit, onDelete }) => {
+interface TransactionsTableProps {
+  transactions: Transaction[];
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (id: string) => void;
+}
+const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onEdit, onDelete }) => {
   if (transactions.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">

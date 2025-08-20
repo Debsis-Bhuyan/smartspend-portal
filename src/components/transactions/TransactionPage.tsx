@@ -1,64 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  X,
-} from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, X } from 'lucide-react';
 import useTransactions from '@/hooks/useTransactions';
 import TransactionForm from './TransactionForm';
 import TransactionsTable from './TransactionsTable';
 import Pagination from './Pagination';
 import SearchAndFilters from './SearchAndFilters';
+import { Transaction } from './type';
 
-const TransactionsModule = () => {
+type View = 'list' | 'add' | 'edit';
+
+const TransactionPage: React.FC = () => {
   const { transactions, loading, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
-  const [currentView, setCurrentView] = useState('list'); // 'list', 'add', 'edit'
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [currentView, setCurrentView] = useState<View>('list');
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
-    category: '', type: '', dateFrom: '', dateTo: '', amountMin: '', amountMax: ''
+    category: '',
+    type: '' as '' | 'INCOME' | 'EXPENSE',
+    dateFrom: '',
+    dateTo: '',
+    amountMin: '',
+    amountMax: ''
   });
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Filter transactions
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = !filters.category || transaction.category === filters.category;
-    const matchesType = !filters.type || transaction.type === filters.type;
-    
-    const matchesDateFrom = !filters.dateFrom || new Date(transaction.date) >= new Date(filters.dateFrom);
-    const matchesDateTo = !filters.dateTo || new Date(transaction.date) <= new Date(filters.dateTo);
-    
-    const matchesAmountMin = !filters.amountMin || Math.abs(transaction.amount) >= parseFloat(filters.amountMin);
-    const matchesAmountMax = !filters.amountMax || Math.abs(transaction.amount) <= parseFloat(filters.amountMax);
+  // Filter transactions with useMemo for performance
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(transaction => {
+      const matchesSearch =
+        transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesCategory && matchesType && matchesDateFrom && matchesDateTo && matchesAmountMin && matchesAmountMax;
-  });
+      const matchesCategory = !filters.category || transaction.category === filters.category;
+      const matchesType = !filters.type || transaction.type === filters.type;
 
-  // Pagination
+      const matchesDateFrom = !filters.dateFrom || new Date(transaction.date) >= new Date(filters.dateFrom);
+      const matchesDateTo = !filters.dateTo || new Date(transaction.date) <= new Date(filters.dateTo);
+
+      const matchesAmountMin = !filters.amountMin || Math.abs(transaction.amount) >= parseFloat(filters.amountMin);
+      const matchesAmountMax = !filters.amountMax || Math.abs(transaction.amount) <= parseFloat(filters.amountMax);
+
+      return matchesSearch && matchesCategory && matchesType && matchesDateFrom && matchesDateTo && matchesAmountMin && matchesAmountMax;
+    });
+  }, [transactions, searchTerm, filters]);
+
+  // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
+
+  const currentTransactions = useMemo(() => {
+    return filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredTransactions, indexOfFirstItem, indexOfLastItem]);
+
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
 
   // Handlers
-  const handleEdit = (transaction) => {
+  const handleEdit = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setCurrentView('edit');
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       deleteTransaction(id);
     }
   };
 
-  const handleSave = (formData) => {
-    if (currentView === 'edit') {
-      updateTransaction(selectedTransaction.id, formData);
+  const handleSave = (formData: Transaction) => {
+    if (currentView === 'edit' && selectedTransaction?.id) {
+      updateTransaction(selectedTransaction?.id, formData);
     } else {
       addTransaction(formData);
     }
@@ -71,7 +83,7 @@ const TransactionsModule = () => {
     setSelectedTransaction(null);
   };
 
-  const handleExport = (format) => {
+  const handleExport = (format: string) => {
     // TODO: Call API GET /api/transactions/export?format=csv/pdf
     const queryParams = new URLSearchParams({
       format,
@@ -82,7 +94,6 @@ const TransactionsModule = () => {
     console.log(`API Call: /api/transactions/export?${queryParams}`);
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -94,36 +105,39 @@ const TransactionsModule = () => {
     );
   }
 
-  // Form views (Add/Edit)
   if (currentView === 'add' || currentView === 'edit') {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {currentView === 'edit' ? 'Edit Transaction' : 'Add New Transaction'}
-              </h1>
-              <button
-                onClick={handleCancel}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
+      <>
 
-          <TransactionForm
-            transaction={selectedTransaction}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        </div>
-      </div>
+        {
+          currentView === 'add' && (
+
+            <TransactionForm
+              title={'Edit Transaction'}
+              isOpen={currentView === 'add'}
+              transaction={selectedTransaction ?? null}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          )
+        }
+        {
+          currentView === 'edit' && (
+
+            <TransactionForm
+              title={'Add New Transaction'}
+              isOpen={currentView === 'edit'}
+              transaction={selectedTransaction ?? null}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
+          )
+        }
+
+      </>
     );
   }
 
-  // List view (default)
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-5 lg:p-6">
       <div className="max-w-8xl mx-auto">
@@ -158,7 +172,8 @@ const TransactionsModule = () => {
             Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredTransactions.length)} of {filteredTransactions.length} transactions
           </p>
           <div className="text-right">
-            <p className="text-sm text-gray-500">Total: 
+            <p className="text-sm text-gray-500">
+              Total:
               <span className="font-semibold ml-1">
                 ${Math.abs(filteredTransactions.reduce((sum, t) => sum + t.amount, 0)).toFixed(2)}
               </span>
@@ -184,4 +199,4 @@ const TransactionsModule = () => {
   );
 };
 
-export default TransactionsModule;
+export default TransactionPage;

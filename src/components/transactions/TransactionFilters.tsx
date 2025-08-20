@@ -1,4 +1,11 @@
-export default function TransactionFilters({ filters, setFilters }) {
+import { TransactionFiltersType } from "./type";
+
+interface TransactionFiltersProps {
+  filters: TransactionFiltersType;
+  setFilters: React.Dispatch<React.SetStateAction<TransactionFiltersType>>;
+}
+
+export default function TransactionFilters({ filters, setFilters }: TransactionFiltersProps) {
   return (
     <div className="flex gap-4 mb-4">
       <select
@@ -14,8 +21,8 @@ export default function TransactionFilters({ filters, setFilters }) {
 
       <input
         type="date"
-        value={filters.date}
-        onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+        value={filters.startDate}
+        onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
         className="border rounded px-2 py-1"
       />
     </div>

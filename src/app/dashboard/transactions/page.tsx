@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/dashboard-layout/DashboardLayout"
 import ProtectedRoute from "@/components/dashboard-layout/ProtectedRoute"
-import TransactionsModule from "@/components/transactions/TransactionPage"
+import TransactionPage from "@/components/transactions/TransactionPage"
 import Head from "next/head"
 
 const UserNotifications = () => {
@@ -15,7 +15,7 @@ const UserNotifications = () => {
             <DashboardLayout
                 title="Transaction" subtitle="Welcome back! Here's your financial overview."
             >
-                <TransactionsModule />
+                <TransactionPage />
             </DashboardLayout>
         </ProtectedRoute>
     )

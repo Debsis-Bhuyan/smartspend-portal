@@ -71,12 +71,18 @@ const LoginPage = () => {
           router.push('/dashboard/admin');
           break;
         default:
-          router.push('/dashboard/user');
+          router.push('/dashboard');
       }
 
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials and try again.');
-    } finally {
+    }
+    catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Login failed. Please check your credentials and try again.');
+      }
+    }
+    finally {
       setIsLoading(false);
     }
   };
@@ -105,9 +111,15 @@ const LoginPage = () => {
       } else {
         setError('Failed to send OTP. Please try again.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send OTP. Please try again.');
-    } finally {
+    }
+    catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to send OTP. Please try again.');
+      }
+    }
+    finally {
       setIsLoading(false);
     }
   };

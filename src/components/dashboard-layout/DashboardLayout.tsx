@@ -93,7 +93,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, subt
     setNotificationsOpen(false);
   };
   const handleNotify = () => {
-    router.push("/dashboard/user/notifications")
+    router.push("/dashboard/notifications")
   };
 
   const SidebarContent = () => (
