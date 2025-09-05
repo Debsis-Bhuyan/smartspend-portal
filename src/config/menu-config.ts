@@ -81,6 +81,14 @@ export const menuConfig: MenuSection[] = [
         isImplemented: true
       },
       {
+        id: 'budget',
+        label: 'My Budget',
+        icon: 'Home',
+        href: '/dashboard/budget',
+        roles: ['user', 'admin'],
+        isImplemented: true
+      },
+      {
         id: 'notifications',
         label: 'My Notifications',
         icon: 'Bell',
@@ -234,7 +242,9 @@ export const isMenuItemImplemented = (href: string): boolean => {
     '/dashboard/user',
     '/dashboard/notifications',
     '/dashboard/transactions',
-    '/dashboard/user/profile'
+    '/dashboard/user/profile',
+    '/dashboard/budget'
+
   ];
   return implementedPages.includes(href);
 };
